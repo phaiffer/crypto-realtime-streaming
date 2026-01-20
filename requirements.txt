@@ -1,0 +1,5 @@
+kafka-python==2.3.0
+requests==2.31.0
+pyspark==3.5.0
+confluent-kafka
+pyspark-stubs
