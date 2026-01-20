@@ -1,18 +1,19 @@
+import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col, window, avg
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
 
 # --- Configuration ---
-KAFKA_BOOTSTRAP_SERVERS = 'localhost:9092'
+KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 KAFKA_TOPIC = 'crypto_prices'
 
 # --- MySQL Configuration ---
-# Update these variables with your local database credentials
-MYSQL_HOST = "localhost"
+# 'host.docker.internal' allows Docker to talk to your local machine's MySQL
+MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
 MYSQL_PORT = "3306"
 MYSQL_DB = "crypto_project"
-MYSQL_USER = "root"      # <-- Change if necessary
-MYSQL_PASSWORD = "W!ll!@n55361316" # <-- UPDATE THIS WITH YOUR PASSWORD
+MYSQL_USER = "root"
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', 'W!ll!@n55361316') # Security best practice
 
 # JDBC Connection URL
 JDBC_URL = f"jdbc:mysql://{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"

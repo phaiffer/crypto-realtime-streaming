@@ -1,3 +1,4 @@
+import os
 import time
 import json
 import requests
@@ -5,7 +6,8 @@ from confluent_kafka import Producer
 from datetime import datetime
 
 # --- Configuration ---
-KAFKA_BOOTSTRAP_SERVERS = 'localhost:9092'
+# Use os.getenv to read from environment, defaulting to localhost if not set
+KAFKA_BOOTSTRAP_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 KAFKA_TOPIC = 'crypto_prices'
 
 # List of symbols to track
