@@ -2,6 +2,7 @@ kafka-python==2.3.0
 requests==2.31.0
 pyspark==3.5.0
 confluent-kafka
+mysql-connector-python==8.0.33
 pyspark-stubs
 pytest
 pytest-mock

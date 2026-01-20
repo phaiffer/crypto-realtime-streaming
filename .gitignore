@@ -20,7 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# Virtual Environments
 .venv/
 venv/
 ENV/
@@ -29,10 +29,25 @@ env/
 # IDE
 .idea/
 
-# Docker
-.env
-*.env.local
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MySQL Data
+mysql_data/
 
 # OS
 .DS_Store
-Thumbs.db
+*.swp
+*.swo
+*~
+
+# Java (Spark)
+*.class
+
+# Environment Variables
+.env
+
+# Logs
+*.log

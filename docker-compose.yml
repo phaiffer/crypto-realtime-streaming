@@ -7,6 +7,8 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - crypto-net
 
   # --- Infrastructure: Kafka ---
   kafka:
@@ -24,6 +26,27 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - crypto-net
+
+  # --- Infrastructure: MySQL (DENTRO DO DOCKER) ---
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: crypto_project
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - crypto-net
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   # --- Application: Producer ---
   crypto-producer:
@@ -34,22 +57,30 @@ services:
     command: python src/producers/btc_producer.py
     environment:
       KAFKA_BOOTSTRAP_SERVERS: 'kafka:29092'
+    networks:
+      - crypto-net
 
   # --- Application: Processor (Spark) ---
   spark-processor:
     build: .
     container_name: spark_processor
     depends_on:
-      - kafka
+      kafka:
+        condition: service_started
+      mysql-db:
+        condition: service_healthy
     command: python src/processors/stream_processor.py
     environment:
       KAFKA_BOOTSTRAP_SERVERS: 'kafka:29092'
-      MYSQL_HOST: 'host.docker.internal'
-      MYSQL_PASSWORD: ${MYSQL_REAL_PASSWORD}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      MYSQL_HOST: 'mysql-db'
+      MYSQL_PORT: '3306'
+      MYSQL_DB: 'crypto_project'
+      MYSQL_USER: 'root'
+      MYSQL_PASSWORD: 'rootpassword'
+    networks:
+      - crypto-net
 
-# --- Visualization: Grafana ---
+  # --- Visualization: Grafana ---
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -57,5 +88,9 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - crypto-net
+
+networks:
+  crypto-net:
+    driver: bridge
